@@ -26,6 +26,7 @@ const PRIMARY = '#1E293B';
 const MUTED = '#64748B';
 const ACCENT = '#2563EB';
 const ACCENT_SOFT = '#EFF6FF';
+const LOADER_COLOR = "#0EA5A4";
 
 export default function SelectCustomer() {
   const insets = useSafeAreaInsets();
@@ -92,7 +93,7 @@ export default function SelectCustomer() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color={ACCENT} />
+        <ActivityIndicator size="large" color={LOADER_COLOR} />
       </View>
     );
   }

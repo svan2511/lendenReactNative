@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
+  ActivityIndicator,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -10,7 +11,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View,
+  View
 } from 'react-native';
 import { getCustomers, getProducts } from '../../../utils/storage';
 
@@ -23,6 +24,7 @@ export default function AddItems() {
   const [items, setItems] = useState<any[]>([]);
   const [productSearch, setProductSearch] = useState('');
   const [total, setTotal] = useState(0);
+  const [loadingProducts, setLoadingProducts] = useState(true);
 
   let existingItems: any[] = [];
   if (existingItemsParam) {
@@ -52,11 +54,13 @@ export default function AddItems() {
   };
 
   const loadData = async (autoAddId?: string) => {
+    setLoadingProducts(true);
     const custs = await getCustomers();
     setCustomer(custs.find(c => c.id == customerId));
 
     const prods = await getProducts();
     setProducts(prods);
+     setLoadingProducts(false);
 
     let updatedItems = existingItems.map(initializeItem);
 
@@ -67,6 +71,7 @@ export default function AddItems() {
 
     setItems(updatedItems);
     calculateTotal(updatedItems);
+   
   };
 
   useFocusEffect(
@@ -168,23 +173,28 @@ export default function AddItems() {
           />
         </View>
 
-        <FlatList
-          data={filteredProducts}
-          keyExtractor={item => item.id.toString()}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <Pressable style={styles.productItem} onPress={() => addItem(item)}>
-              <View>
-                <Text style={styles.productName}>{item.name}</Text>
-                <Text style={styles.productMeta}>
-                  ₹{item.price} {item.unitType === 'weight' ? '/ kg' : ''}
-                </Text>
-              </View>
-              <Text style={styles.addText}>ADD</Text>
-            </Pressable>
-          )}
-        />
+       {loadingProducts && filteredProducts.length === 0 && <View >
+        <ActivityIndicator size="large" color="#0EA5A4" style={{ transform: [{ scale: 0.7 }] }}/>
+      </View>}
+
+       
+      <FlatList
+        data={filteredProducts}
+        keyExtractor={item => item.id.toString()}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item }) => (
+          <Pressable style={styles.productItem} onPress={() => addItem(item)}>
+            <View>
+              <Text style={styles.productName}>{item.name}</Text>
+              <Text style={styles.productMeta}>
+                ₹{item.price} {item.unitType === 'weight' ? '/ kg' : ''}
+              </Text>
+            </View>
+            <Text style={styles.addText}>ADD</Text>
+          </Pressable>
+        )}
+      />
 
         {items.length > 0 && (
           <View style={styles.selectedCard}>
@@ -314,4 +324,11 @@ const styles = StyleSheet.create({
   totalText: { fontFamily: 'Poppins_600SemiBold_Italic', fontSize: 16, marginBottom: 10 },
   previewBtn: { backgroundColor: '#2563EB', borderRadius: 10, paddingVertical: 10, alignItems: 'center' },
   previewText: { fontFamily: 'Poppins_600SemiBold_Italic', fontSize: 13, color: '#FFFFFF' },
+
+loadingText: {
+  marginTop: 10,
+  fontFamily: 'Poppins_600SemiBold_Italic',
+  fontSize: 13,
+  color: '#64748B',
+},
 });
