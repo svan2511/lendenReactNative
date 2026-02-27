@@ -62,7 +62,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (token: string, user: any) => {
-    console.log('loggedin user token is :' , token);
+    //console.log('loggedin user token is :' , token);
     try {
       await AsyncStorage.multiSet([
         ['authToken', token],

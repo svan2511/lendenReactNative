@@ -4,9 +4,9 @@ import { router } from "expo-router";
 import Toast from 'react-native-toast-message';
 
 
-const BASE_URL = 'http://192.168.1.5:8000/api'; // 👈 change once
+//const BASE_URL = 'http://192.168.1.5:8000/api'; // 👈 change once
 
-// const BASE_URL = "http://192.168.29.92:8000/api"
+const BASE_URL = "https://lendenapis-owzq.onrender.com/api"
 
 type ApiMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
@@ -58,6 +58,7 @@ export async function apiRequest<T = any>(
 
     return data as T;
   } catch (error) {
+    console.log(error);
     throw new Error('Network error');
   }
 }

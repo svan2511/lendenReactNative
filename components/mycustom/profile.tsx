@@ -147,7 +147,7 @@ export default function Profile() {
           text1: 'Success',
           text2: res.message,
           position: 'top',
-          visibilityTime: 2000,
+          visibilityTime: 1000,
         });
       }
     } catch (e: any) {
