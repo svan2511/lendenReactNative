@@ -1,4 +1,3 @@
-
 import { useSession } from '@/contexts/SessionContext';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
@@ -31,8 +30,7 @@ export default function AddProduct() {
     isServiceBusiness ? 'fixed' : 'weight'
   );
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false); // ✅ loader state
-  
+  const [loading, setLoading] = useState(false);
 
   // Locked type
   const type: 'product' | 'service' = isServiceBusiness ? 'service' : 'product';
@@ -47,18 +45,16 @@ export default function AddProduct() {
     }
   }
 
-
   // ── Reset form when screen is focused ──
   useFocusEffect(
     useCallback(() => {
-      // Reset all form fields when screen comes into focus
       setName('');
       setPrice('');
       setQuantity('');
       setUnitType(isServiceBusiness ? 'fixed' : 'weight');
       setError('');
       setLoading(false);
-    }, [isServiceBusiness]) // dependency: reset if business type changes (rare)
+    }, [isServiceBusiness])
   );
 
   /* ---------------- SAVE ---------------- */
@@ -68,8 +64,8 @@ export default function AddProduct() {
     return;
   }
   if(!isServiceBusiness && !quantity.trim()){
-  setError('All fields are required');
-      return;
+    setError('All fields are required');
+    return;
   }
 
   setLoading(true);
@@ -85,22 +81,20 @@ export default function AddProduct() {
 
     const savedId = await addProduct(newProduct);
 
-    // Prepare common params to pass back
-    const backParams = {
-      newlyAddedProductId: savedId,
-      customerId:customerId,
-      // Preserve existingItems if it was passed
-      ...(existingItems ? { existingItems } : {}),
-    };
-
+    // FIXED: Forward the exact existingItems string + new ID
+    // This is what was breaking old items (they were being lost)
     router.replace({
-        pathname: '/billing/add-items',
-        params: backParams,
-      });
+      pathname: '/billing/add-items',
+      params: {
+        customerId: customerId,
+        newlyAddedProductId: savedId,
+        existingItems: existingItemsParam || '[]',   // ← THIS LINE WAS THE FIX
+      },
+    });
   
   } catch (err) {
     setError('Failed to save product');
-    //console.error(err);
+    console.error(err);
   } finally {
     setLoading(false);
   }
@@ -224,7 +218,7 @@ export default function AddProduct() {
           <Pressable
             style={[styles.saveBtn, loading && { opacity: 0.6 }]}
             onPress={handleSave}
-            disabled={loading} // disable during save
+            disabled={loading}
           >
             {loading ? (
               <ActivityIndicator color="#FFFFFF" />
@@ -237,7 +231,6 @@ export default function AddProduct() {
     </KeyboardAvoidingView>
   );
 }
-
 /* ---------------- STYLES (UNCHANGED) ---------------- */
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8FAFC', padding: 14 },

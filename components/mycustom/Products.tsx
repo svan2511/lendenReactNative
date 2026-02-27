@@ -87,6 +87,7 @@ export default function Products() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDelete, setShowDelete] = useState(false);
   const [errorMsg, setErrorMsg] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false); // 🔹 loader state
 
   useFocusEffect(
     useCallback(() => {
@@ -142,14 +143,22 @@ export default function Products() {
 
   const deleteProduct = async () => {
     if (!deleteId) return;
+
+    setDeleteLoading(true); // 🔹 show loader
+
     try {
       const data = await deleteSingleProduct(deleteId);
-      if(data.success) {
-      setProducts((prev) => prev.filter((p) => p.id !== data.product));
+
+      if (!data?.success) {
+        throw new Error(data?.message || 'Internal server error!');
       }
-    } catch (e:any) {
+
+      if (data.success) {
+        setProducts((prev) => prev.filter((p) => p.id !== data.product));
+      }
+    } catch (e: any) {
       console.log('Delete failed', e);
-       Toast.show({
+      Toast.show({
         type: 'error',
         text1: 'Error',
         text2: e?.message || 'Failed to delete product. Please try again later.',
@@ -159,6 +168,7 @@ export default function Products() {
     } finally {
       setShowDelete(false);
       setDeleteId(null);
+      setDeleteLoading(false); // 🔹 hide loader
     }
   };
 
@@ -175,26 +185,28 @@ export default function Products() {
       <View style={styles.row}>
         <View style={{ flex: 1 }}>
           <Text style={styles.name}>{item.name}</Text>
-         <Text style={styles.meta}>
-          ₹{Number(item.price).toFixed(2)}
-          {item.type === 'product' && (
-            <>
-              {' '}· Qty {item.quantity}{' '}
-              {item.unitType === 'weight' ? 'kg' : 'pcs'}
-            </>
-          )}
-        </Text>
+          <Text style={styles.meta}>
+            ₹{Number(item.price).toFixed(2)}
+            {item.type === 'product' && (
+              <>
+                {' '}· Qty {item.quantity}{' '}
+                {item.unitType === 'weight' ? 'kg' : 'pcs'}
+              </>
+            )}
+          </Text>
 
           <View style={styles.badge}>
             <Text style={styles.badgeText}>
               {item.unitType === 'weight' ? 'WEIGHT BASED' : 'FIXED UNIT'}
             </Text>
           </View>
-          {item.type === 'product' && item.quantity <= 2 && <View style={styles.stockbadge}>
-            <Text style={styles.OutOfStock}>
-            Out of Stock
-            </Text>
-          </View>}
+          {item.type === 'product' && item.quantity <= 2 && (
+            <View style={styles.stockbadge}>
+              <Text style={styles.OutOfStock}>
+                Out of Stock
+              </Text>
+            </View>
+          )}
         </View>
 
         <View style={styles.actions}>
@@ -267,8 +279,16 @@ export default function Products() {
                 <Text style={styles.cancelText}>Cancel</Text>
               </Pressable>
 
-              <Pressable style={styles.confirmBtn} onPress={deleteProduct}>
-                <Text style={styles.confirmText}>Delete</Text>
+              <Pressable
+                style={styles.confirmBtn}
+                onPress={deleteProduct}
+                disabled={deleteLoading} // 🔹 disable while loading
+              >
+                {deleteLoading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.confirmText}>Delete</Text>
+                )}
               </Pressable>
             </View>
           </View>

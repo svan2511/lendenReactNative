@@ -4,9 +4,9 @@ import { router } from "expo-router";
 import Toast from 'react-native-toast-message';
 
 
-//const BASE_URL = 'http://192.168.1.5:8000/api'; // 👈 change once
+const BASE_URL = 'http://192.168.1.5:8000/api'; // 👈 change once
 
-const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL!;
+//const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL!;
 
 type ApiMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 

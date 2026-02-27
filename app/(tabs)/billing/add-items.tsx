@@ -49,35 +49,45 @@ export default function AddItems() {
     return {
       ...product,
       calculatedPrice: Number(product.calculatedPrice) || price,
-      quantity: 1,  // always default to 1 when adding new item (fixed unit)
+      quantity: 1,
     };
   };
 
   const loadData = async (autoAddId?: string) => {
     setLoadingProducts(true);
-    const custs = await getCustomers();
-    setCustomer(custs.find(c => c.id == customerId));
+    try {
+      const custs = await getCustomers();
+      setCustomer(custs.find(c => c.id == customerId));
 
-    const prods = await getProducts();
-    setProducts(prods);
-     setLoadingProducts(false);
+      const prods = await getProducts();
+      setProducts(prods);
+      setLoadingProducts(false);
 
-    let updatedItems = existingItems.map(initializeItem);
+      let updatedItems = existingItems.map(initializeItem);
 
-    if (autoAddId) {
-      const newProduct = prods.find(x => String(x.id) === autoAddId);
-      if (newProduct) updatedItems.push(initializeItem(newProduct));
+      if (autoAddId) {
+        const newProduct = prods.find(x => String(x.id) === autoAddId);
+        if (newProduct) {
+          // ← DUPLICATE PROTECTION (this was missing)
+          const alreadyExists = updatedItems.some(i => String(i.id) === autoAddId);
+          if (!alreadyExists) {
+            updatedItems.push(initializeItem(newProduct));
+          }
+        }
+      }
+
+      setItems(updatedItems);
+      calculateTotal(updatedItems);
+    } catch (err) {
+      console.error(err);
+      setLoadingProducts(false);
     }
-
-    setItems(updatedItems);
-    calculateTotal(updatedItems);
-   
   };
 
   useFocusEffect(
     useCallback(() => {
       loadData(newlyAddedProductId as string | undefined);
-    }, [newlyAddedProductId])
+    }, [newlyAddedProductId, customerId]) // added customerId for safety
   );
 
   const addItem = (product: any) => {
@@ -99,12 +109,10 @@ export default function AddItems() {
     let qty = Number(value);
     const updated = [...items];
 
-    // For fixed price products: force integer, no decimals allowed
     if (updated[index].unitType !== 'weight') {
-      qty = Math.floor(qty); // remove decimal part
-      qty = Math.max(1, qty); // minimum 1
+      qty = Math.floor(qty);
+      qty = Math.max(1, qty);
     } else {
-      // For weight: allow decimal if you ever use quantity for weight (optional)
       qty = Math.max(1, qty);
     }
 
@@ -154,7 +162,11 @@ export default function AddItems() {
               onPress={() =>
                 router.push({
                   pathname: '/billing/add-product',
-                  params: { customerId: customerId, fromInvoice: '1', existingItems: JSON.stringify(items) },
+                  params: { 
+                    customerId: customerId, 
+                    fromInvoice: '1', 
+                    existingItems: JSON.stringify(items)   // ← your original line (kept)
+                  },
                 })
               }
             >
@@ -177,24 +189,28 @@ export default function AddItems() {
         <ActivityIndicator size="large" color="#0EA5A4" style={{ transform: [{ scale: 0.7 }] }}/>
       </View>}
 
+       {!loadingProducts && filteredProducts.length === 0 && <View style={styles.empty}>
+          <Text style={styles.emptyText}>No products found</Text>
+        </View>}
+
        
       <FlatList
-        data={filteredProducts}
-        keyExtractor={item => item.id.toString()}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <Pressable style={styles.productItem} onPress={() => addItem(item)}>
-            <View>
-              <Text style={styles.productName}>{item.name}</Text>
-              <Text style={styles.productMeta}>
-                ₹{item.price} {item.unitType === 'weight' ? '/ kg' : ''}
-              </Text>
-            </View>
-            <Text style={styles.addText}>ADD</Text>
-          </Pressable>
-        )}
-      />
+      data={filteredProducts}
+      keyExtractor={item => item.id.toString()}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      renderItem={({ item }) => (
+        <Pressable style={styles.productItem} onPress={() => addItem(item)}>
+          <View>
+            <Text style={styles.productName}>{item.name}</Text>
+            <Text style={styles.productMeta}>
+              ₹{item.price} {item.unitType === 'weight' ? '/ kg' : ''}
+            </Text>
+          </View>
+          <Text style={styles.addText}>ADD</Text>
+        </Pressable>
+      )}
+    />
 
         {items.length > 0 && (
           <View style={styles.selectedCard}>
@@ -330,5 +346,21 @@ loadingText: {
   fontFamily: 'Poppins_600SemiBold_Italic',
   fontSize: 13,
   color: '#64748B',
-},
+},centerLoader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+   empty: {
+    marginTop: 50,
+    alignItems: 'center',
+    
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 50,
+    fontSize: 12,
+    color: '#64748B',
+    fontFamily: 'Poppins_600SemiBold_Italic',
+  },
 });

@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const TAB_CONFIG = [
   { name: 'index', title: 'Home', icon: 'home', iconOutline: 'home-outline' },
-  { name: 'billing', title: 'Billing', icon: 'receipt', iconOutline: 'receipt-outline' },
+  { name: 'billing', title: 'Billing', icon: 'receipt', iconOutline: 'receipt-outline', href: null },
   { name: 'customers', title: 'Customers', icon: 'people', iconOutline: 'people-outline' },
   { name: 'products', title: 'Products', icon: 'layers', iconOutline: 'layers-outline' },
   { name: 'profile', title: 'Profile', icon: 'person', iconOutline: 'person-outline' },
@@ -77,7 +77,17 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
             return (
               <TouchableOpacity
                 key={route.key}
-                onPress={() => !isFocused && navigation.navigate(route.name)}
+                onPress={() => {
+                  if (isFocused) {
+                    // Already on this tab → reset stack to root (index screen)
+                    navigation.reset({
+                      index: 0,
+                      routes: [{ name: route.name }],
+                    });
+                  } else {
+                    navigation.navigate(route.name);
+                  }
+                }}
                 onLayout={measureTab(route.name)}
                 style={styles.tabButton}
                 activeOpacity={0.7}
@@ -123,7 +133,14 @@ export default function TabLayout() {
       screenOptions={{ headerShown: false }}
     >
       {TAB_CONFIG.map((tab) => (
-        <Tabs.Screen key={tab.name} name={tab.name} options={{ title: tab.title }} />
+        <Tabs.Screen
+          key={tab.name}
+          name={tab.name}
+          options={{
+            title: tab.title,
+            href: tab.href,  // null for billing → treats it as directory with its own _layout
+          }}
+        />
       ))}
     </Tabs>
   );
