@@ -21,6 +21,7 @@ export default function AddProduct() {
 
   /* ---------------- BUSINESS TYPE ---------------- */
   const isServiceBusiness = onboarding?.business_type === 'service';
+  const has_stock = onboarding?.has_stock;
 
   /* ---------------- STATE ---------------- */
   const [name, setName] = useState('');
@@ -63,7 +64,7 @@ export default function AddProduct() {
     setError('All fields are required');
     return;
   }
-  if(!isServiceBusiness && !quantity.trim()){
+  if(!isServiceBusiness && has_stock && !quantity.trim()){
     setError('All fields are required');
     return;
   }
@@ -158,7 +159,7 @@ export default function AddProduct() {
           </View>
 
           {/* Quantity */}
-         {!isServiceBusiness && <View style={styles.field}>
+         {!isServiceBusiness && has_stock && <View style={styles.field}>
             <Text style={styles.label}>{quantityLabel}</Text>
             <TextInput
               style={styles.input}

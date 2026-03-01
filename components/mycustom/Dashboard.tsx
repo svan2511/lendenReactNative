@@ -253,11 +253,11 @@ export default function Dashboard() {
           onPress={() => router.push('/customers')}
         >
           <Text style={styles.cardTitle}>
-            Outstanding Customer Payments
+            Outstanding Payments
           </Text>
           <View style={styles.infoPillRed}>
             <Text style={styles.infoTextRed}>
-             {data.customers_with_pending} customers have unpaid dues ⚠️
+             {data.customers_with_pending > 0 ? data.customers_with_pending : 'No '} customers have unpaid dues ⚠️
             </Text>
           </View>
         </Pressable>

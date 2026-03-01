@@ -1,23 +1,27 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 // Import your storage functions (update these later for real API)
+import { useSession } from '@/contexts/SessionContext';
 import { getProductById, updateProduct } from '@/utils/storage';
 
 export default function EditProduct() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+    const { onboarding } = useSession();
+    const has_stock = onboarding?.has_stock;
+     const isServiceBusiness = onboarding?.business_type === 'service';
 
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
@@ -169,7 +173,7 @@ export default function EditProduct() {
           </View>
 
           {/* Quantity - now properly filled */}
-          <View style={styles.field}>
+         { has_stock && <View style={styles.field}>
             <Text style={styles.label}>
               Quantity ({unitType === 'weight' ? 'kg' : 'units'})
             </Text>
@@ -184,7 +188,7 @@ export default function EditProduct() {
                 setError('');
               }}
             />
-          </View>
+          </View>}
 
           {/* Weight / Fixed toggle - only for products */}
           {type !== 'service' && (
@@ -235,7 +239,7 @@ export default function EditProduct() {
             {saving ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <Text style={styles.saveText}>Update Product</Text>
+              <Text style={styles.saveText}>Update {isServiceBusiness ? 'Service' : 'Product'}</Text>
             )}
           </Pressable>
         </View>

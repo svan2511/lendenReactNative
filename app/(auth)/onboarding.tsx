@@ -34,9 +34,11 @@ export default function OnboardingScreen() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const isStockEnabled = businessType !== 'service';
+
   const isFormComplete =
     businessType !== null &&
-    hasStock !== null &&
+    (businessType === 'service' || hasStock !== null) &&
     hasAppointments !== null;
 
  const handleSubmit = async () => {
@@ -48,12 +50,15 @@ export default function OnboardingScreen() {
     try {
       const payload = {
         business_type: businessType!,
-        has_stock: hasStock!,
+        has_stock: businessType === 'service' ? null : hasStock!,
         has_appointments: hasAppointments!,
         has_staff: hasStaff ?? false,
       };
 
+      
+
       const res = await submitOnboarding(payload);
+console.log(businessType , hasStock , res);
 
       if (!res?.success) {
         setErrorMessage(res?.message || 'Failed to save your preferences');
@@ -66,8 +71,6 @@ export default function OnboardingScreen() {
       router.replace('/(tabs)');
 
     } catch (e: any) {
-      //console.error('Onboarding submit failed:', e);
-
       const msg =
         e?.response?.data?.message ||
         e?.message ||
@@ -100,7 +103,7 @@ export default function OnboardingScreen() {
               { label: 'Selling products (shop, retail)', value: 'product' },
               { label: 'Offering services (repair, teaching)', value: 'service' },
               { label: 'Both products + services', value: 'both' },
-              { label: 'Freelance or consulting', value: 'freelance' },
+              // { label: 'Freelance or consulting', value: 'freelance' },
             ].map((opt) => (
               <TouchableOpacity
                 key={opt.value}
@@ -132,14 +135,16 @@ export default function OnboardingScreen() {
                 key={String(val)}
                 style={[
                   styles.yesNoBtn,
-                  hasStock === val && styles.yesNoSelected,
+                  !isStockEnabled && { opacity: 0.5 },
+                  hasStock === val && isStockEnabled && styles.yesNoSelected,
                 ]}
                 onPress={() => setHasStock(val)}
+                disabled={!isStockEnabled}
               >
                 <Text
                   style={[
                     styles.yesNoTxt,
-                    hasStock === val && styles.yesNoTxtSelected,
+                    hasStock === val && isStockEnabled && styles.yesNoTxtSelected,
                   ]}
                 >
                   {val ? 'Yes' : 'No'}
@@ -208,15 +213,12 @@ export default function OnboardingScreen() {
             disabled={!isFormComplete || loading}
             onPress={handleSubmit}
           >
-
             {errorMessage && (
               <Text style={{ color: 'red', textAlign: 'center', marginVertical: 12, fontSize: 14 }}>
                 {errorMessage}
               </Text>
             )}
 
-
-            
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (

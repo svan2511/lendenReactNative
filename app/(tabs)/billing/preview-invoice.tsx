@@ -260,7 +260,7 @@ export default function PreviewInvoice() {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Selected Products</Text>
+        <Text style={styles.sectionTitle}>Selected Items</Text>
 
         {items.map((item, idx) => {
           const qty = item.grams

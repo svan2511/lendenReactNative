@@ -7,25 +7,24 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const TAB_CONFIG = [
-  { name: 'index', title: 'Home', icon: 'home', iconOutline: 'home-outline' },
-  { name: 'billing', title: 'Billing', icon: 'receipt', iconOutline: 'receipt-outline', href: null },
-  { name: 'customers', title: 'Customers', icon: 'people', iconOutline: 'people-outline' },
-  { name: 'products', title: 'Products', icon: 'layers', iconOutline: 'layers-outline' },
-  { name: 'profile', title: 'Profile', icon: 'person', iconOutline: 'person-outline' },
-  { name: 'reports', title: 'Reports', icon: 'stats-chart', iconOutline: 'stats-chart-outline' },
-] as const;
+import { useSession } from '@/contexts/SessionContext'; // Yeh context onboardingData deta hai
 
-function CustomTabBar({ state, descriptors, navigation }: any) {
+// CustomTabBar ab TAB_CONFIG ko props ke through receive karega
+function CustomTabBar({
+  state,
+  descriptors,
+  navigation,
+  tabConfig, // ← Naya prop
+}: any & { tabConfig: typeof TAB_CONFIG_DEFAULT }) {
   const insets = useSafeAreaInsets();
   const scrollViewRef = React.useRef<ScrollView>(null);
-  const [tabMeasurements, setTabMeasurements] = React.useState<{[key: string]: {x: number, width: number}}>({});
+  const [tabMeasurements, setTabMeasurements] = React.useState<{ [key: string]: { x: number; width: number } }>({});
   const [containerWidth, setContainerWidth] = React.useState(0);
-  
+
   const indicatorPosition = React.useRef(new Animated.Value(0)).current;
 
   const activeRoute = state.routes[state.index];
@@ -33,9 +32,8 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
   React.useEffect(() => {
     const measurement = tabMeasurements[activeRoute.name];
     if (measurement && scrollViewRef.current) {
-      // Calculate center position of the tab
-      const centerX = measurement.x + (measurement.width / 2) - 10; // 10 is half of indicator width (20)
-      
+      const centerX = measurement.x + measurement.width / 2 - 10;
+
       Animated.spring(indicatorPosition, {
         toValue: centerX,
         useNativeDriver: true,
@@ -43,43 +41,41 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
         tension: 100,
       }).start();
 
-      // Auto-scroll to keep active tab visible
-      const scrollTo = measurement.x - (containerWidth / 2) + (measurement.width / 2);
+      const scrollTo = measurement.x - containerWidth / 2 + measurement.width / 2;
       scrollViewRef.current.scrollTo({
         x: Math.max(0, scrollTo),
         animated: true,
       });
     }
-  }, [state.index, tabMeasurements, containerWidth]);
+  }, [state.index, tabMeasurements, containerWidth, activeRoute.name]);
 
   const measureTab = (name: string) => (event: any) => {
     const { x, width } = event.nativeEvent.layout;
-    setTabMeasurements(prev => ({ ...prev, [name]: { x, width } }));
+    setTabMeasurements((prev) => ({ ...prev, [name]: { x, width } }));
   };
 
   return (
     <View style={[styles.container, { paddingBottom: insets.bottom }]}>
-      <ScrollView 
+      <ScrollView
         ref={scrollViewRef}
-        horizontal 
+        horizontal
         showsHorizontalScrollIndicator={false}
-        scrollEnabled={TAB_CONFIG.length > 4}
+        scrollEnabled={true}
         contentContainerStyle={styles.scrollContent}
         onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
       >
         <View style={styles.tabsRow}>
           {state.routes.map((route: any, index: number) => {
-            const config = TAB_CONFIG.find(t => t.name === route.name);
+            const config = tabConfig.find((t: any) => t.name === route.name);
             if (!config) return null;
-            
+
             const isFocused = state.index === index;
-            
+
             return (
               <TouchableOpacity
                 key={route.key}
                 onPress={() => {
                   if (isFocused) {
-                    // Already on this tab → reset stack to root (index screen)
                     navigation.reset({
                       index: 0,
                       routes: [{ name: route.name }],
@@ -92,33 +88,23 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
                 style={styles.tabButton}
                 activeOpacity={0.7}
               >
-                <View style={[
-                  styles.iconBox,
-                  isFocused && styles.activeIconBox
-                ]}>
+                <View style={[styles.iconBox, isFocused && styles.activeIconBox]}>
                   <Ionicons
-                    name={isFocused ? config.icon : config.iconOutline as any}
+                    name={isFocused ? config.icon : (config.iconOutline as any)}
                     size={24}
                     color={isFocused ? '#007AFF' : '#8E8E93'}
                   />
                 </View>
-                
-                <Text style={[
-                  styles.label,
-                  isFocused && styles.activeLabel
-                ]}>
+
+                <Text style={[styles.label, isFocused && styles.activeLabel]}>
                   {config.title}
                 </Text>
               </TouchableOpacity>
             );
           })}
-          
-          {/* Animated Indicator inside the row */}
+
           <Animated.View
-            style={[
-              styles.indicator,
-              { transform: [{ translateX: indicatorPosition }] }
-            ]}
+            style={[styles.indicator, { transform: [{ translateX: indicatorPosition }] }]}
           />
         </View>
       </ScrollView>
@@ -126,19 +112,54 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
   );
 }
 
+// Default config (fallback jab business_type null ho)
+const TAB_CONFIG_DEFAULT = [
+  { name: 'index', title: 'Home', icon: 'home', iconOutline: 'home-outline' },
+  { name: 'billing', title: 'Billing', icon: 'receipt', iconOutline: 'receipt-outline', href: null },
+  { name: 'customers', title: 'Customers', icon: 'people', iconOutline: 'people-outline' },
+  { name: 'products', title: 'Products', icon: 'layers', iconOutline: 'layers-outline' },
+  { name: 'profile', title: 'Profile', icon: 'person', iconOutline: 'person-outline' },
+  { name: 'reports', title: 'Reports', icon: 'stats-chart', iconOutline: 'stats-chart-outline' },
+] as const;
+
+// Dynamic config generator
+function getTabConfig(businessType: string | null | undefined) {
+  const isServiceOnly = businessType === 'service';
+
+  return [
+    { name: 'index', title: 'Home', icon: 'home', iconOutline: 'home-outline' },
+    { name: 'billing', title: 'Billing', icon: 'receipt', iconOutline: 'receipt-outline', href: null },
+    { name: 'customers', title: 'Customers', icon: 'people', iconOutline: 'people-outline' },
+    {
+      name: 'products',
+      title: isServiceOnly ? 'Services' : 'Products',
+      icon: isServiceOnly ? 'briefcase' : 'layers',
+      iconOutline: isServiceOnly ? 'briefcase-outline' : 'layers-outline',
+    },
+    { name: 'profile', title: 'Profile', icon: 'person', iconOutline: 'person-outline' },
+    { name: 'reports', title: 'Reports', icon: 'stats-chart', iconOutline: 'stats-chart-outline' },
+  ] as const;
+}
+
 export default function TabLayout() {
+  const { onboarding } = useSession(); // onboardingData mein business_type hona chahiye
+
+  const businessType = onboarding?.business_type ?? null;
+
+  const dynamicTabConfig = getTabConfig(businessType);
+
   return (
     <Tabs
-      tabBar={(props) => <CustomTabBar {...props} />}
+      tabBar={(props) => <CustomTabBar {...props} tabConfig={dynamicTabConfig} />}
       screenOptions={{ headerShown: false }}
     >
-      {TAB_CONFIG.map((tab) => (
+      {dynamicTabConfig.map((tab) => (
         <Tabs.Screen
           key={tab.name}
           name={tab.name}
           options={{
             title: tab.title,
-            href: tab.href,  // null for billing → treats it as directory with its own _layout
+            href: tab.href ?? undefined,
           }}
         />
       ))}
@@ -161,7 +182,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     paddingTop: 8,
     paddingHorizontal: 8,
-    position: 'relative', // For indicator positioning
+    position: 'relative',
   },
   tabButton: {
     minWidth: 70,
@@ -174,10 +195,10 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: -6
+    marginBottom: -6,
   },
   activeIconBox: {
-    //backgroundColor: 'rgba(0,122,255,0.1)',
+    // backgroundColor: 'rgba(0,122,255,0.1)',
   },
   label: {
     fontSize: 11,
@@ -196,6 +217,5 @@ const styles = StyleSheet.create({
     height: 3,
     backgroundColor: '#007AFF',
     borderRadius: 2,
-    marginLeft: 0, // Will be offset by translateX
   },
 });

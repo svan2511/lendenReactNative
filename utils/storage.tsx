@@ -89,7 +89,7 @@ export const addProduct = async (newProduct: {
   const payload = {
     name: newProduct.name,
     price: newProduct.price,
-    quantity: newProduct.quantity,
+    quantity: newProduct.quantity ?? 0,
     type: newProduct.type,
     unit_type:
       newProduct.unitType ||
@@ -98,6 +98,7 @@ export const addProduct = async (newProduct: {
 
   // Call backend API
   const response = await addProductApi(payload);
+  console.log(response);
 
   if (!response?.product?.id) {
     throw new Error('Invalid add product response');

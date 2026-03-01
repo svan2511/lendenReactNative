@@ -1,4 +1,3 @@
-
 import { useSession } from '@/contexts/SessionContext';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
@@ -16,26 +15,32 @@ import { addProduct } from '../../../utils/storage';
 
 export default function AddProduct() {
   const router = useRouter();
-  const { returnTo , existingItems: existingItemsParam } = useLocalSearchParams();
+  const { returnTo, existingItems: existingItemsParam } = useLocalSearchParams();
   
   const { onboarding } = useSession();
 
   /* ---------------- BUSINESS TYPE ---------------- */
-  const isServiceBusiness = onboarding?.business_type === 'service';
+  const businessType = onboarding?.business_type;
+  const has_stock = onboarding?.has_stock;
+  const isBothBusiness = businessType === 'both';
+
+  // Agar both nahi hai to locked rahega, both mein user choose karega
+  const [itemType, setItemType] = useState<'product' | 'service'>(
+    businessType === 'service' ? 'service' : 'product'
+  );
 
   /* ---------------- STATE ---------------- */
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [quantity, setQuantity] = useState('');
   const [unitType, setUnitType] = useState<'weight' | 'fixed'>(
-    isServiceBusiness ? 'fixed' : 'weight'
+    itemType === 'service' ? 'fixed' : 'weight'
   );
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false); // ✅ loader state
-  
+  const [loading, setLoading] = useState(false);
 
-  // Locked type
-  const type: 'product' | 'service' = isServiceBusiness ? 'service' : 'product';
+  // Locked type based on current selection
+  const type: 'product' | 'service' = itemType;
 
   /* ---------------- PARSE EXISTING ITEMS ---------------- */
   let existingItems: any[] = [];
@@ -47,67 +52,63 @@ export default function AddProduct() {
     }
   }
 
-
-  // ── Reset form when screen is focused ──
+  // Reset form on focus
   useFocusEffect(
     useCallback(() => {
-      // Reset all form fields when screen comes into focus
       setName('');
       setPrice('');
       setQuantity('');
-      setUnitType(isServiceBusiness ? 'fixed' : 'weight');
+      setUnitType(itemType === 'service' ? 'fixed' : 'weight');
       setError('');
       setLoading(false);
-    }, [isServiceBusiness]) // dependency: reset if business type changes (rare)
+    }, [itemType]) // itemType change hone pe reset
   );
 
   /* ---------------- SAVE ---------------- */
- const handleSave = async () => {
-  if (!name.trim() || !price.trim() ) {
-    setError('All fields are required');
-    return;
-  }
-
-  if(!isServiceBusiness && !quantity.trim()){
-  setError('All fields are required');
+  const handleSave = async () => {
+    if (!name.trim() || !price.trim()) {
+      setError('All fields are required');
       return;
-  }
+    }
 
-  setLoading(true);
+    if (itemType === 'product' && has_stock && !quantity.trim()) {
+      setError('All fields are required');
+      return;
+    }
 
-  try {
-    const newProduct = {
-      name: name.trim(),
-      price: Number(price),
-      quantity: Number(quantity),
-      type,
-      unitType,
-    };
+    setLoading(true);
 
-    const savedId = await addProduct(newProduct);
+    try {
+      const newProduct = {
+        name: name.trim(),
+        price: Number(price),
+        quantity: itemType === 'product' ? Number(quantity) : undefined,
+        type,
+        unitType: itemType === 'service' ? 'fixed' : unitType,
+      };
 
-    // Prepare common params to pass back
-    const backParams = {
-      newlyAddedProductId: savedId,
-      // Preserve existingItems if it was passed
-      ...(existingItems ? { existingItems } : {}),
-    };
+      const savedId = await addProduct(newProduct);
 
- router.replace({
+      const backParams = {
+        newlyAddedProductId: savedId,
+        ...(existingItems ? { existingItems } : {}),
+      };
+
+      router.replace({
         pathname: '/products',
         params: backParams,
       });
-  } catch (err) {
-    setError('Failed to save product');
-    console.error(err);
-  } finally {
-    setLoading(false);
-  }
-};
+    } catch (err) {
+      setError('Failed to save');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   /* ---------------- QUANTITY LABEL ---------------- */
   const quantityLabel =
-    isServiceBusiness || unitType === 'fixed'
+    unitType === 'fixed'
       ? 'Total Quantity in shop (units)'
       : 'Total Quantity in shop (kg)';
 
@@ -120,17 +121,62 @@ export default function AddProduct() {
         {/* Header */}
         <View style={styles.headerCard}>
           <Text style={styles.title}>
-            Add New {isServiceBusiness ? 'Service' : 'Product'}
+            Add New {itemType === 'service' ? 'Service' : 'Product'}
           </Text>
           <Text style={styles.subTitle}>Add item and continue billing</Text>
         </View>
 
         {/* Card */}
         <View style={styles.card}>
+          {/* Item Type Selector - Sirf both business mein dikhega */}
+          {isBothBusiness && (
+            <View style={styles.typeRow}>
+              <Pressable
+                style={[
+                  styles.typeBtn,
+                  itemType === 'product' && styles.typeActive,
+                ]}
+                onPress={() => {
+                  setItemType('product');
+                  setUnitType('weight');
+                }}
+              >
+                <Text
+                  style={[
+                    styles.typeText,
+                    itemType === 'product' && styles.typeTextActive,
+                  ]}
+                >
+                  Product
+                </Text>
+              </Pressable>
+
+              <Pressable
+                style={[
+                  styles.typeBtn,
+                  itemType === 'service' && styles.typeActive,
+                ]}
+                onPress={() => {
+                  setItemType('service');
+                  setUnitType('fixed');
+                }}
+              >
+                <Text
+                  style={[
+                    styles.typeText,
+                    itemType === 'service' && styles.typeTextActive,
+                  ]}
+                >
+                  Service
+                </Text>
+              </Pressable>
+            </View>
+          )}
+
           {/* Name */}
           <View style={styles.field}>
             <Text style={styles.label}>
-              {isServiceBusiness ? 'Service Name' : 'Product Name'}
+              {itemType === 'service' ? 'Service Name' : 'Product Name'}
             </Text>
             <TextInput
               style={styles.input}
@@ -162,24 +208,26 @@ export default function AddProduct() {
             />
           </View>
 
-          {/* Quantity */}
-         { !isServiceBusiness &&  <View style={styles.field}>
-            <Text style={styles.label}>{quantityLabel}</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter quantity"
-              placeholderTextColor="#9CA3AF"
-              keyboardType="numeric"
-              value={quantity}
-              onChangeText={t => {
-                setQuantity(t);
-                setError('');
-              }}
-            />
-          </View>}
+          {/* Quantity - sirf product aur has_stock mein */}
+          {itemType === 'product' && has_stock && (
+            <View style={styles.field}>
+              <Text style={styles.label}>{quantityLabel}</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter quantity"
+                placeholderTextColor="#9CA3AF"
+                keyboardType="numeric"
+                value={quantity}
+                onChangeText={t => {
+                  setQuantity(t);
+                  setError('');
+                }}
+              />
+            </View>
+          )}
 
-          {/* WEIGHT / FIXED (ONLY PRODUCT BUSINESS) */}
-          {!isServiceBusiness && (
+          {/* WEIGHT / FIXED - sirf product mein dikhega */}
+          {itemType === 'product' && (
             <View style={styles.typeRow}>
               <Pressable
                 style={[
@@ -219,16 +267,18 @@ export default function AddProduct() {
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-          {/* ---------------- SAVE BUTTON WITH LOADER ---------------- */}
+          {/* Save Button */}
           <Pressable
             style={[styles.saveBtn, loading && { opacity: 0.6 }]}
             onPress={handleSave}
-            disabled={loading} // disable during save
+            disabled={loading}
           >
             {loading ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <Text style={styles.saveText}>Save Product</Text>
+              <Text style={styles.saveText}>
+                Save {itemType === 'service' ? 'Service' : 'Product'}
+              </Text>
             )}
           </Pressable>
         </View>

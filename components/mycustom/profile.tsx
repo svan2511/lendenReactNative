@@ -32,6 +32,7 @@ const BORDER = '#E2E8F0';
 type ShopProfile = {
   shopName: string;
   shopAddress: string;
+  phone: string;
 };
 
 export default function Profile() {
@@ -59,8 +60,9 @@ export default function Profile() {
         if(!profileData) {
           setdataForProfileStorage(res.profile);
         }
+    
         setProfile(res.profile);
-        setShopPhone(res.profile.phone);
+       
         setShopName(res.profile.shopName);
         setShopAddress(res.profile.shopAddress);
       } else {
@@ -133,6 +135,7 @@ export default function Profile() {
         setProfile({
           shopName: payload.shopName,
           shopAddress: payload.shopAddress,
+          phone:res?.profile?.phone
         });
 
         await saveProfileData({
@@ -186,7 +189,7 @@ export default function Profile() {
 
             <Text style={[styles.label, { marginTop: 12 }]}>Phone</Text>
             <Text style={styles.value}>
-              {`+91-${shopPhone}` || 'Not added'}
+              {`+91-${profile.phone}` || 'Not added'}
             </Text>
 
             <Pressable
