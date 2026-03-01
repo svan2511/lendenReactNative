@@ -11,6 +11,7 @@ export default function ReportStack() {
       }}
     >
       <Stack.Screen name="index" options={{ title: 'Reports' }} />
+      <Stack.Screen name="add" options={{ title: 'Reports' }} />
       <Stack.Screen name="[id]" options={{ title: 'Reports' }} />
    
     </Stack>

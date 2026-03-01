@@ -251,6 +251,21 @@ export default function ProductsScreen() {
       </View>
 
       {/* Actions (edit/delete) */}
+
+       <View style={styles.actions}>
+          <Pressable onPress={() => openEdit(item.id)} style={styles.editBtn}>
+            <Ionicons name="create-outline" size={16} color={PRIMARY} />
+          </Pressable>
+
+          <Pressable
+            onPress={() => confirmDelete(item.id)}
+            style={styles.deleteBtn}
+          >
+            <Ionicons name="trash-outline" size={16} color={DANGER} />
+          </Pressable>
+        </View>
+
+        
       <View style={styles.actions}>
         {/* ... same as before */}
       </View>

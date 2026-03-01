@@ -98,9 +98,9 @@ export default function AddProduct() {
         pathname: '/products',
         params: backParams,
       });
-    } catch (err) {
-      setError('Failed to save');
-      console.error(err);
+    } catch (err:any) {
+      setError(err.message || 'Failed to save');
+      console.log(err);
     } finally {
       setLoading(false);
     }

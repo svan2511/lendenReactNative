@@ -4,15 +4,15 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    ActivityIndicator,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
 
 const BG = '#F8FAFC';
@@ -76,7 +76,7 @@ export default function AddExpenseScreen() {
         description: description.trim() || undefined,
       });
 
-      router.back(); // ✅ clean success flow (same as Add Product)
+      router.back();
     } catch (err: any) {
       setError(
         err?.response?.data?.message ||
@@ -92,11 +92,14 @@ export default function AddExpenseScreen() {
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
     >
       <ScrollView
         style={{ flex: 1, backgroundColor: BG }}
-        contentContainerStyle={{ padding: 14 }}
+        contentContainerStyle={{ padding: 14, paddingBottom: 60 }}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        automaticallyAdjustKeyboardInsets={true}
       >
         {/* Header */}
         <View style={styles.headerCard}>
@@ -238,6 +241,7 @@ export default function AddExpenseScreen() {
               placeholder="Any notes..."
               placeholderTextColor="#9CA3AF"
               multiline
+              textAlignVertical="top"
               value={description}
               onChangeText={setDescription}
             />
@@ -270,7 +274,7 @@ export default function AddExpenseScreen() {
   );
 }
 
-/* ---------------- STYLES (MATCHED WITH ADD PRODUCT) ---------------- */
+/* ---------------- STYLES ---------------- */
 const styles = StyleSheet.create({
   headerCard: {
     backgroundColor: CARD,
@@ -289,7 +293,6 @@ const styles = StyleSheet.create({
     color: MUTED,
     marginTop: 2,
   },
-
   card: {
     backgroundColor: CARD,
     borderRadius: 14,
@@ -297,18 +300,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: BORDER,
   },
-
   field: {
     marginBottom: 14,
   },
-
   label: {
     fontFamily: 'Poppins_600SemiBold_Italic',
     fontSize: 12,
     color: '#475569',
     marginBottom: 6,
   },
-
   input: {
     borderWidth: 1,
     borderColor: BORDER,
@@ -320,7 +320,6 @@ const styles = StyleSheet.create({
     color: DARK,
     backgroundColor: '#F9FAFB',
   },
-
   dateBtn: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -332,19 +331,16 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: '#F9FAFB',
   },
-
   dateText: {
     fontFamily: 'Poppins_600SemiBold_Italic',
     fontSize: 14,
     color: DARK,
   },
-
   chipRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
-
   chip: {
     borderRadius: 20,
     borderWidth: 1,
@@ -353,23 +349,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     backgroundColor: '#F9FAFB',
   },
-
   chipActive: {
     backgroundColor: '#EFF6FF',
     borderColor: PRIMARY,
   },
-
   chipText: {
     fontFamily: 'Poppins_600SemiBold_Italic',
     fontSize: 12,
     color: MUTED,
     textTransform: 'capitalize',
   },
-
   chipTextActive: {
     color: PRIMARY,
   },
-
   errorText: {
     fontFamily: 'Poppins_600SemiBold_Italic',
     fontSize: 12,
@@ -377,14 +369,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 10,
   },
-
   saveBtn: {
     backgroundColor: PRIMARY,
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: 'center',
   },
-
   saveText: {
     fontFamily: 'Poppins_600SemiBold_Italic',
     fontSize: 14,

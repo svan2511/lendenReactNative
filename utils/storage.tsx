@@ -98,7 +98,10 @@ export const addProduct = async (newProduct: {
 
   // Call backend API
   const response = await addProductApi(payload);
-  console.log(response);
+
+   if (!response?.success) {
+    throw new Error(response?.message  || 'Invalid add product response');
+  }
 
   if (!response?.product?.id) {
     throw new Error('Invalid add product response');

@@ -16,6 +16,7 @@ export default function AddCustomer() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [address, setAddress] = useState('');
 
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -39,7 +40,7 @@ export default function AddCustomer() {
       const res = await addCustomerApi({
         name,
         phone,
-        email: email || undefined,
+        address: address || undefined,
       });
 
       if (res.success) {
@@ -103,14 +104,14 @@ export default function AddCustomer() {
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Email (optional)</Text>
+          <Text style={styles.label}>Address (optional)</Text>
           <TextInput
             style={styles.input}
-            placeholder="Enter email address"
+            placeholder="Enter address"
             placeholderTextColor="#9CA3AF"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
+            value={address}
+            onChangeText={setAddress}
+            multiline
           />
         </View>
 

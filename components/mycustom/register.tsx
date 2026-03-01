@@ -2,17 +2,17 @@ import { registerUser } from '@/services/auth';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Animated,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Animated,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 const COLORS = {
@@ -48,12 +48,12 @@ const handleRegister = async () => {
   setSuccessMessage('');
 
   if (name.trim().length < 2) {
-    setError('Please enter your name');
+    setError('Please enter your name.');
     return;
   }
 
   if (phone.length !== 10) {
-    setError('Enter a valid 10-digit mobile number');
+    setError('Mobile number must be exactly 10 digits.');
     return;
   }
 

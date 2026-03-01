@@ -228,7 +228,7 @@ export default function Dashboard() {
             <Text style={styles.cardTitle}>Low Stock Items</Text>
             <View style={styles.infoPillRed}>
               <Text style={styles.infoTextRed}>
-                {data.low_stock_count} items running low ⚠️
+                {data.low_stock_count > 0 ? data.low_stock_count : 'No'} items running low ⚠️
               </Text>
             </View>
           </Pressable>
@@ -257,7 +257,7 @@ export default function Dashboard() {
           </Text>
           <View style={styles.infoPillRed}>
             <Text style={styles.infoTextRed}>
-             {data.customers_with_pending > 0 ? data.customers_with_pending : 'No '} customers have unpaid dues ⚠️
+             {data.customers_with_pending > 0 ? data.customers_with_pending : 'No'} customers have unpaid dues ⚠️
             </Text>
           </View>
         </Pressable>

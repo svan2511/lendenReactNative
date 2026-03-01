@@ -59,7 +59,7 @@ export const getDashboardData = () => {
 export const addCustomerApi = (payload: {
   name: string;
   phone: string;
-  email?: string;
+  address?: string;
 }) => {
   return authRequest('/create-customer', {
     method: 'POST',

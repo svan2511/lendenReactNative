@@ -10,7 +10,6 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import Toast from 'react-native-toast-message';
 
 // Import your storage functions (update these later for real API)
 import { useSession } from '@/contexts/SessionContext';
@@ -31,6 +30,7 @@ export default function EditProduct() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState('');
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -72,7 +72,7 @@ export default function EditProduct() {
 
   const handleUpdate = async () => {
     if (!name.trim() || !price.trim() || !quantity.trim()) {
-      setError('All fields are required');
+      setFormError('All fields are required');
       return;
     }
 
@@ -95,15 +95,15 @@ export default function EditProduct() {
       router.replace('/products');
       // Alternative: router.back();  // if you want to return to previous screen
     } catch (err:any) {
-      setError('Failed to update product');
+      setFormError(err.message || 'Failed to update product');
       console.log('Update error:', err);
-       Toast.show({
-              type: 'error',
-              text1: 'Error',
-              text2: err?.message || 'Failed to update products. Please try again later.',
-              position: 'top',
-              visibilityTime: 2000,
-            });
+      //  Toast.show({
+      //         type: 'error',
+      //         text1: 'Error',
+      //         text2: err?.message || 'Failed to update products. Please try again later.',
+      //         position: 'top',
+      //         visibilityTime: 2000,
+      //       });
     } finally {
       setSaving(false);
     }
@@ -229,7 +229,7 @@ export default function EditProduct() {
             </View>
           )}
 
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+          {formError ? <Text style={styles.errorText}>{formError}</Text> : null}
 
           <Pressable
             style={[styles.saveBtn, saving && { opacity: 0.6 }]}
