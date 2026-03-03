@@ -38,8 +38,8 @@ export async function apiRequest<T = any>(
     if (res.status === 401) {
       // Clear auth token
      
-     await AsyncStorage.multiRemove(['authToken', 'user']);
-     console.log(res.status , "i am in 401 updated");
+     await AsyncStorage.multiRemove(['authToken', 'user','onboardingData']);
+     
       // Show toast message
       Toast.show({
         type: 'error',

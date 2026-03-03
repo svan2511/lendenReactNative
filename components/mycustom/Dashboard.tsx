@@ -236,13 +236,13 @@ export default function Dashboard() {
 
         {onboarding?.has_appointments && (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Today’s Appointments</Text>
-            <View style={styles.infoPillBlue}>
-              <Text style={styles.infoTextBlue}>
-                5 appointments scheduled 📅
-              </Text>
-            </View>
+          <Text style={styles.cardTitle}>Today’s Appointments</Text>
+          <View style={styles.infoPillBlue}>
+            <Text style={styles.infoTextBlue}>
+              🚀 Feature coming soon
+            </Text>
           </View>
+        </View>
         )}
 
         <Pressable
